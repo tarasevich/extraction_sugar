@@ -4,6 +4,7 @@ require 'active_support/core_ext'
 
 module ChildExtractors
   include ExtractionSugar::Macros
+  include ExtractionSugar::NameConversions
 
   define_extractor :child_content do |child_name|
     subject.at_xpath(child_name).try(:content)
@@ -17,13 +18,13 @@ end
 
 class GoogleSitesEntry < Struct.new :subject
     include ChildExtractors
-    #apply_convention CamelCase
+    apply_conversion CAMELIZE
 
     child_content {
         id
         title
         page_name
-        feed_link
+        revision
     }
     child_time {
         updated
@@ -68,6 +69,7 @@ describe ChildExtractors do
     it 'processes simple names' do
       entry.id.should == 'https://sites.google.com/feeds/content/domainName/siteName/1265948545471894517'
       entry.title.should == 'files'
+      entry.revision.should == '1'
     end
 
     it 'processes extractors refering other extractors' do
@@ -75,6 +77,8 @@ describe ChildExtractors do
       entry.edited.should == Time.parse('2009-08-03T19:35:32.488Z')
     end
 
-    it 'processes converted names'
+    it 'processes converted names' do
+      entry.page_name.should == 'files'
+    end
   end
 end
