@@ -10,6 +10,8 @@ module ExtractionSugar
 
     included do
       extend ActiveSupport::Concern
+      extend ActiveSupport::Memoizable
+
       const_set :ClassMethods, Module.new {
         include Macros::ClassMethods
 
@@ -45,10 +47,11 @@ module ExtractionSugar
             pattern = convert_name(attr_name, *args)
 
             # define attribute reader
-            define_method attr_name do
-              # TODO: cache
-              instance_exec(pattern, *function_args, &function)
-            end
+            eval <<-END, binding, __FILE__, __LINE__
+              define_method attr_name do
+                @#{attr_name} ||= instance_exec(pattern, *function_args, &function)
+              end
+            END
           end.instance_eval(&definitions_block)
         end
 
@@ -60,10 +63,11 @@ module ExtractionSugar
 
       def extract(&definitions_block)
         MethodCapture.new do |attr_name, &block|
-          STRING_OR_SYMBOL.(attr_name)
-          define_method attr_name do
-            instance_eval(&block)
-          end
+          eval <<-END, binding, __FILE__, __LINE__
+            define_method attr_name do
+              @#{attr_name} ||= instance_eval(&block)
+            end
+          END
         end.instance_eval(&definitions_block)
       end
     end
