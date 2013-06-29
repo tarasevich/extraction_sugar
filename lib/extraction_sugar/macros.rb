@@ -41,14 +41,14 @@ module ExtractionSugar
             # define attribute reader
             define_method attr_name do
               # TODO: cache
-              instance_exec(pattern, &function)
+              instance_exec(pattern, *args, &function)
             end
           end.instance_eval(&dsl_block)
         end
 
         # define a convinience method for other macros
-        define_method extractor_name do |pattern|
-          instance_exec(pattern, &function)
+        define_method extractor_name do |*args|
+          instance_exec(*args, &function)
         end
       end
 

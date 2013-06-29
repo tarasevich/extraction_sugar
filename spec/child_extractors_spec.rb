@@ -14,6 +14,10 @@ module ChildExtractors
     str = child_content(child_name)
     Time.parse(str) if str
   end
+
+  define_extractor :child_attribute do |child_name, attribute_name|
+    subject.at_xpath(child_name).try :[], attribute_name
+  end
 end
 
 class GoogleSitesEntry < Struct.new :subject
@@ -36,7 +40,7 @@ class GoogleSitesEntry < Struct.new :subject
         #self
         #edit
     #}
-    #child_attribute { feed_link(:href) }
+    child_attribute { feed_link(:href) }
 end
 
 describe ChildExtractors do
@@ -55,7 +59,7 @@ describe ChildExtractors do
           href="https://sites.google.com/feeds/content/domainName/siteName/12671894517"/>
       <link rel="edit" type="application/atom+xml"
           href="https://sites.google.com/feeds/content/domainName/siteName/12671894517"/>
-      <feedLink href="httpn://sites.google.com/feeds/content/domainName/siteName?parent=12671894517"/>
+      <feedLink href="http://sites.google.com/feeds/content/domainName/siteName?parent=12671894517"/>
       <pageName>files</pageName>
       <revision>1</revision>
     </entry>
@@ -79,6 +83,10 @@ describe ChildExtractors do
 
     it 'processes converted names' do
       entry.page_name.should == 'files'
+    end
+
+    it 'processes extractors with additional arguments' do
+      entry.feed_link.should == "http://sites.google.com/feeds/content/domainName/siteName?parent=12671894517"
     end
   end
 end
