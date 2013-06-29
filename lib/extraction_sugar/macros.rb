@@ -11,6 +11,7 @@ module ExtractionSugar
     included do
       extend ActiveSupport::Concern
       const_set :ClassMethods, Module.new {
+        include Macros::ClassMethods
 
         def apply_conversion(conversion)
           @default_conversion = conversion
@@ -37,8 +38,8 @@ module ExtractionSugar
 
         # define a macro that would define attributes
         const_get(:ClassMethods).
-        send :define_method, extractor_name do |&dsl_block|
-          MethodCapture.new do |attr_name, *args, &block|
+        send :define_method, extractor_name do |&definitions_block|
+          MethodCapture.new do |attr_name, *args, &ingore_block|
             STRING_OR_SYMBOL.(attr_name)
             function_args = args.pop(arity)
             pattern = convert_name(attr_name, *args)
@@ -48,7 +49,7 @@ module ExtractionSugar
               # TODO: cache
               instance_exec(pattern, *function_args, &function)
             end
-          end.instance_eval(&dsl_block)
+          end.instance_eval(&definitions_block)
         end
 
         # define a convinience method for other macros
@@ -57,6 +58,14 @@ module ExtractionSugar
         end
       end
 
+      def extract(&definitions_block)
+        MethodCapture.new do |attr_name, &block|
+          STRING_OR_SYMBOL.(attr_name)
+          define_method attr_name do
+            instance_eval(&block)
+          end
+        end.instance_eval(&definitions_block)
+      end
     end
 
   end

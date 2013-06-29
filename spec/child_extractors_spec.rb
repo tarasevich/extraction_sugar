@@ -48,7 +48,14 @@ class GoogleSitesEntry < Struct.new :subject
         edit
         parent "http://schemas.google.com/sites/2008#parent"
     }
-    child_attribute { feed_link(:href) }
+    child_attribute {
+      feed_link(:href)
+      category(:label)
+    }
+    extract {
+      name { subject.at_xpath('author/name').try :content }
+      email { subject.at_xpath('author/email').try :content }
+    }
 end
 
 describe ChildExtractors do
@@ -57,6 +64,8 @@ describe ChildExtractors do
       <id>https://sites.google.com/feeds/content/domainName/siteName/1265948545471894517</id>
       <updated>2009-08-03T19:35:32.488Z</updated>
       <edited xmlns:app="http://www.w3.org/2007/app">2009-08-03T19:35:32.488Z</edited>
+      <category scheme="http://schemas.google.com/g/2005#kind"
+            term="http://schemas.google.com/sites/2008#webpage" label="webpage"/>
       <title>files</title>
       <content type="xhtml">
         <div xmlns="http://www.w3.org/1999/xhtml">Page html content here</div>
@@ -68,6 +77,10 @@ describe ChildExtractors do
       <link rel="edit" type="application/atom+xml"
           href="https://sites.google.com/feeds/content/domainName/siteName/12671894517"/>
       <feedLink href="http://sites.google.com/feeds/content/domainName/siteName?parent=12671894517"/>
+      <author>
+        <name>User</name>
+        <email>user@gmail.com</email>
+      </author>
       <pageName>files</pageName>
       <revision>1</revision>
     </entry>
@@ -98,12 +111,15 @@ describe ChildExtractors do
 
     it 'processes extractors with additional arguments' do
       entry.feed_link.should == "http://sites.google.com/feeds/content/domainName/siteName?parent=12671894517"
+      entry.category.should == "webpage"
     end
 
     it 'allows to redefine an explicit pattern' do
       entry.parent.should == "https://sites.google.com/feeds/content/domainName/siteName/6492205817"
     end
 
-    it 'defines let for custom extractions'
+    it 'defines extract macro for custom extractions' do
+      entry.name.should == 'User'
+    end
   end
 end
