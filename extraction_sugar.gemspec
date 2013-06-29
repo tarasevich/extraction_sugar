@@ -8,4 +8,5 @@ Gem::Specification.new do |s|
   s.email       = ''
   s.files       = ["lib/extraction_sugar.rb"]
   s.homepage    = ''
+  s.add_development_dependency "rspec"
 end
