@@ -6,7 +6,12 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
+    active_support (3.0.0)
+      activesupport (= 3.0.0)
+    activesupport (3.0.0)
     diff-lcs (1.1.3)
+    i18n (0.6.4)
+    nokogiri (1.5.5)
     rspec (2.11.0)
       rspec-core (~> 2.11.0)
       rspec-expectations (~> 2.11.0)
@@ -20,5 +25,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  active_support
   extraction_sugar!
+  i18n
+  nokogiri
   rspec
