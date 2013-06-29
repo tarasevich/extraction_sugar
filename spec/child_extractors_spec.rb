@@ -29,33 +29,33 @@ module ChildExtractors
 end
 
 class GoogleSitesEntry < Struct.new :subject
-    include ChildExtractors
-    apply_conversion CAMELIZE
+  include ChildExtractors
+  apply_conversion CAMELIZE
 
-    child_content {
-        id
-        title
-        page_name
-        revision
-    }
-    child_time {
-        updated
-        edited
-    }
-    child_inner_html { content }
-    child_link_href {
-        alternate
-        edit
-        parent "http://schemas.google.com/sites/2008#parent"
-    }
-    child_attribute {
-      feed_link(:href)
-      category(:label)
-    }
-    extract {
-      name { subject.at_xpath('author/name').try :content }
-      email { subject.at_xpath('author/email').try :content }
-    }
+  child_content {
+    id
+    title
+    page_name
+    revision
+  }
+  child_time {
+    updated
+    edited
+  }
+  child_inner_html { content }
+  child_link_href {
+    alternate
+    edit
+    parent "http://schemas.google.com/sites/2008#parent"
+  }
+  child_attribute {
+    feed_link(:href)
+    category(:label)
+  }
+  extract {
+    name { subject.at_xpath('author/name').try :content }
+    email { subject.at_xpath('author/email').try :content }
+  }
 end
 
 describe ChildExtractors do
