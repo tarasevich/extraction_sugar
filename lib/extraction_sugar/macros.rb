@@ -18,9 +18,12 @@ module ExtractionSugar
 
         private
 
-        def convert_name(attr_name)
-          pattern = attr_name.to_s.freeze
-          pattern = @default_conversion.(pattern) if @default_conversion
+        def convert_name(attr_name, pattern = nil)
+          unless pattern
+            pattern = attr_name.to_s.freeze
+            pattern = @default_conversion.(pattern) if @default_conversion
+          end
+
           pattern
         end
       }
@@ -28,6 +31,7 @@ module ExtractionSugar
 
     module ClassMethods
       def define_extractor(extractor_name, &function)
+        arity = function.arity - 1
         STRING_OR_SYMBOL.(extractor_name)
         name_str = extractor_name.is_a?(Symbol) ? extractor_name.to_s : extractor_name
 
@@ -36,12 +40,13 @@ module ExtractionSugar
         send :define_method, extractor_name do |&dsl_block|
           MethodCapture.new do |attr_name, *args, &block|
             STRING_OR_SYMBOL.(attr_name)
-            pattern = convert_name(attr_name)
+            function_args = args.pop(arity)
+            pattern = convert_name(attr_name, *args)
 
             # define attribute reader
             define_method attr_name do
               # TODO: cache
-              instance_exec(pattern, *args, &function)
+              instance_exec(pattern, *function_args, &function)
             end
           end.instance_eval(&dsl_block)
         end
