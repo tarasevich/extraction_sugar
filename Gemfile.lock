@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     extraction_sugar (0.0.0)
+      active_support
 
 GEM
   remote: http://rubygems.org/
@@ -25,7 +26,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_support
   extraction_sugar!
   i18n
   nokogiri

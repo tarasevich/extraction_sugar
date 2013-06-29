@@ -3,21 +3,20 @@ require 'nokogiri'
 require 'active_support/core_ext'
 
 module ChildExtractors
-  extend ActiveSupport::Concern
-  extend ExtractionSugar::Macros
+  include ExtractionSugar::Macros
 
   define_extractor :child_content do |child_name|
     subject.at_xpath(child_name).try(:content)
   end
 
-  #define_extractor :child_time do |child_name|
-    #str = child_content(child_name)
-    #Time.parse(str) if str
-  #end
+  define_extractor :child_time do |child_name|
+    str = child_content(child_name)
+    Time.parse(str) if str
+  end
 end
 
 class GoogleSitesEntry < Struct.new :subject
-    extend ChildExtractors
+    include ChildExtractors
     #apply_convention CamelCase
 
     child_content {
@@ -26,10 +25,10 @@ class GoogleSitesEntry < Struct.new :subject
         page_name
         feed_link
     }
-    #child_time {
-        #updated
-        #edited
-    #}
+    child_time {
+        updated
+        edited
+    }
     #child_inner_html { content }
     #child_link_href {
         #alternate
@@ -69,6 +68,11 @@ describe ChildExtractors do
     it 'processes simple names' do
       entry.id.should == 'https://sites.google.com/feeds/content/domainName/siteName/1265948545471894517'
       entry.title.should == 'files'
+    end
+
+    it 'processes extractors refering other extractors' do
+      entry.updated.should == Time.parse('2009-08-03T19:35:32.488Z')
+      entry.edited.should == Time.parse('2009-08-03T19:35:32.488Z')
     end
 
     it 'processes converted names'
